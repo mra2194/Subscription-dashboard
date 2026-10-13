@@ -1,17 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
-import { supabase } from '../supabase';
 import { useAuth } from '../auth';
 import { friendlyError } from '../lib/errors';
 
 export function LoginPage() {
-  const { session, profile, denied, refreshProfile } = useAuth();
+  const { profile, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (session && profile) {
+  if (profile) {
     return <Navigate to={profile.must_change_password ? '/ganti-password' : '/'} replace />;
   }
 
@@ -19,19 +18,14 @@ export function LoginPage() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (err) {
-      setError(friendlyError(err));
-      setBusy(false);
-      return;
-    }
     try {
-      await refreshProfile();
-    } catch (e2) {
-      setError(friendlyError(e2));
+      await login(email.trim(), password);
+    } catch (err) {
+      setError(friendlyError(err));
+      setPassword('');
+    } finally {
+      setBusy(false);
     }
-    setPassword('');
-    setBusy(false);
   }
 
   return (
@@ -39,7 +33,7 @@ export function LoginPage() {
       <form className="card narrow" onSubmit={submit}>
         <h1>Masuk</h1>
         <p className="muted">AAL Subscription Dashboard</p>
-        {(error || denied) && <div className="alert">{error ?? denied}</div>}
+        {error && <div className="alert">{error}</div>}
         <label>
           Email
           <input type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />

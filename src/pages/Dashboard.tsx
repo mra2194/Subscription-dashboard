@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../supabase';
+import { api } from '../api';
 import { useAuth } from '../auth';
 import { StatusPill } from '../components/Layout';
 import { canWrite, type TenantOverview } from '../lib/types';
@@ -15,15 +15,10 @@ export function DashboardPage() {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    supabase
-      .from('v_admin_tenant_overview')
-      .select('*')
-      .order('ends_at', { ascending: true, nullsFirst: true })
-      .then(({ data, error: err }) => {
-        if (err) setError(friendlyError(err));
-        else setRows((data ?? []) as TenantOverview[]);
-        setLoading(false);
-      });
+    api<TenantOverview[]>('overview')
+      .then(setRows)
+      .catch((err) => setError(friendlyError(err)))
+      .finally(() => setLoading(false));
   }, []);
 
   const stats = useMemo(() => {

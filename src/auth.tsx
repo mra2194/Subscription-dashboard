@@ -1,78 +1,61 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { Session } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { api, getToken, onUnauthenticated, setToken } from './api';
 import type { AdminProfile } from './lib/types';
 
 interface AuthState {
   loading: boolean;
-  session: Session | null;
   profile: AdminProfile | null;
-  /** Diisi bila login berhasil di Supabase tetapi akun bukan admin aktif. */
-  denied: string | null;
-  refreshProfile: () => Promise<void>;
+  login: (email: string, password: string) => Promise<AdminProfile>;
+  changePassword: (current: string, next: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
 
+// Server juga mengakhiri sesi setelah 30 menit tanpa permintaan.
 const IDLE_LIMIT_MS = 30 * 60 * 1000;
-
-async function loadProfile(): Promise<AdminProfile | null> {
-  const { data, error } = await supabase.rpc('my_admin_profile');
-  if (error) throw error;
-  const rows = (data ?? []) as AdminProfile[];
-  return rows[0] ?? null;
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<AdminProfile | null>(null);
-  const [denied, setDenied] = useState<string | null>(null);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    try {
+      await api('logout');
+    } catch {
+      // tetap keluar di sisi klien
+    }
+    setToken(null);
     setProfile(null);
-    setSession(null);
   }, []);
 
-  const refreshProfile = useCallback(async () => {
-    const p = await loadProfile();
-    if (!p) {
-      setDenied('Akun ini tidak terdaftar sebagai admin.');
-      await signOut();
-      return;
-    }
-    if (!p.is_active) {
-      setDenied('Akun admin ini dinonaktifkan.');
-      await signOut();
-      return;
-    }
-    setDenied(null);
-    setProfile(p);
-  }, [signOut]);
+  const login = useCallback(async (email: string, password: string) => {
+    const res = await api<{ token: string; profile: AdminProfile }>('login', { email, password });
+    setToken(res.token);
+    setProfile(res.profile);
+    return res.profile;
+  }, []);
+
+  const changePassword = useCallback(async (current: string, next: string) => {
+    const res = await api<{ profile: AdminProfile }>('changePassword', { current_password: current, new_password: next });
+    setProfile(res.profile);
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (cancelled) return;
-      setSession(data.session);
-      if (data.session) await refreshProfile().catch(() => signOut());
+    const off = onUnauthenticated(() => setProfile(null));
+    if (!getToken()) {
       setLoading(false);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      if (!s) setProfile(null);
-    });
-    return () => {
-      cancelled = true;
-      sub.subscription.unsubscribe();
-    };
-  }, [refreshProfile, signOut]);
+      return () => { off(); };
+    }
+    api<{ profile: AdminProfile }>('me')
+      .then((res) => setProfile(res.profile))
+      .catch(() => setToken(null))
+      .finally(() => setLoading(false));
+    return () => { off(); };
+  }, []);
 
-  // Logout otomatis setelah 30 menit tanpa aktivitas.
   useEffect(() => {
-    if (!session) return;
+    if (!profile) return;
     let timer = window.setTimeout(signOut, IDLE_LIMIT_MS);
     const reset = () => {
       window.clearTimeout(timer);
@@ -84,10 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.clearTimeout(timer);
       events.forEach((e) => window.removeEventListener(e, reset));
     };
-  }, [session, signOut]);
+  }, [profile, signOut]);
 
   return (
-    <AuthContext.Provider value={{ loading, session, profile, denied, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ loading, profile, login, changePassword, signOut }}>
       {children}
     </AuthContext.Provider>
   );

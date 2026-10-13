@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
+import { api } from '../api';
 import { priceFor, usePlans } from '../lib/usePlans';
 import { formatRupiah } from '../lib/format';
 import { friendlyError } from '../lib/errors';
@@ -35,30 +35,25 @@ export function TenantNewPage() {
     setBusy(true);
     setError(null);
     try {
-      const start = new Date(`${form.start}T00:00:00+07:00`);
-      const end = new Date(start);
-      end.setMonth(end.getMonth() + form.months);
-      const { data, error: err } = await supabase.rpc('create_tenant', {
-        p_business_name: form.business_name,
-        p_owner_name: form.owner_name,
-        p_owner_phone: form.owner_phone,
-        p_owner_email: form.owner_email,
-        p_address: form.address,
-        p_plan_code: form.plan_code,
-        p_starts_at: start.toISOString(),
-        p_ends_at: end.toISOString(),
-        p_billing_cycle: form.billing_cycle,
-        p_price: form.price,
+      const tenant = await api<{ id: string; customer_code: string }>('createTenant', {
+        business_name: form.business_name,
+        owner_name: form.owner_name,
+        owner_phone: form.owner_phone,
+        owner_email: form.owner_email,
+        address: form.address,
+        plan_code: form.plan_code,
+        starts_at: new Date(`${form.start}T00:00:00+07:00`).toISOString(),
+        months: form.months,
+        billing_cycle: form.billing_cycle,
+        price: form.price,
       });
-      if (err) throw err;
-      const tenant = data as { id: string; customer_code: string };
-      const keyRes = await supabase.rpc('issue_license_key', { p_tenant_id: tenant.id });
-      if (keyRes.error) {
+      try {
+        const res = await api<{ license_key: string }>('issueLicenseKey', { tenant_id: tenant.id });
+        setCreated({ id: tenant.id, code: tenant.customer_code, key: res.license_key });
+      } catch {
         // Customer sudah dibuat; key bisa diterbitkan dari halaman detail oleh superadmin.
         navigate(`/customer/${tenant.id}`);
-        return;
       }
-      setCreated({ id: tenant.id, code: tenant.customer_code, key: keyRes.data as string });
     } catch (e2) {
       setError(friendlyError(e2));
     } finally {

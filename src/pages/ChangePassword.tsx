@@ -1,12 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
 import { useAuth } from '../auth';
 import { checkNewPassword, MIN_PASSWORD_LENGTH } from '../lib/password';
 import { friendlyError } from '../lib/errors';
 
 export function ChangePasswordPage() {
-  const { profile, refreshProfile, signOut } = useAuth();
+  const { profile, changePassword, signOut } = useAuth();
   const navigate = useNavigate();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -23,12 +22,8 @@ export function ChangePasswordPage() {
     setBusy(true);
     setError(null);
     try {
-      // Verifikasi password lama dulu; updateUser sendiri tidak memeriksanya.
-      const verify = await supabase.auth.signInWithPassword({ email, password: current });
-      if (verify.error) throw new Error('Password lama salah.');
-      const { error: err } = await supabase.auth.updateUser({ password: next });
-      if (err) throw err;
-      await refreshProfile();
+      // Server memverifikasi password lama dan menegakkan aturan password yang sama.
+      await changePassword(current, next);
       navigate('/', { replace: true });
     } catch (e2) {
       setError(friendlyError(e2));

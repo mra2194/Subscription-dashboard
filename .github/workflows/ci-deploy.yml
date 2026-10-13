@@ -25,8 +25,6 @@ jobs:
       - run: npm ci
       - run: npx tsc -b
       - run: npm test
-      - name: Database tests (migration, RLS, RPC)
-        run: npm run test:db
       - run: npm audit --omit=dev --audit-level=high
 
   deploy:
@@ -48,8 +46,7 @@ jobs:
       - run: npm ci
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
           BASE_PATH: /${{ github.event.repository.name }}/
         run: npm run build
       - uses: actions/configure-pages@v5

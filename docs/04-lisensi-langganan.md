@@ -1,6 +1,6 @@
 # Lisensi, Langganan & Dashboard Admin (Control Plane)
 
-Status: draf Fase 2, 13/10/2026. Skema: `supabase/migrations/20261013000000_init.sql` (sudah diuji di PostgreSQL 16: device ke-3 pada paket 2 kasir ditolak `DEVICE_QUOTA_EXCEEDED`).
+Status: draf Fase 2, 13/10/2026. Implementasi: Google Sheet private + Apps Script (`apps-script/`); device ke-3 pada paket 2 kasir ditolak `DEVICE_QUOTA_EXCEEDED` (lihat `docs/TEST-REPORT.md`).
 
 ## 1. Celah yang harus disadari dulu
 
@@ -34,7 +34,7 @@ flowchart LR
   subgraph AAL["Milik AAL (Pak Ridho)"]
     ADM["Dashboard Admin (web)"]
     LIC["License Service"]
-    PDB[("DB platform (Supabase)")]
+    PDB[("Google Sheet private")]
     ADM --> LIC --> PDB
   end
   subgraph App["Aplikasi POS"]
