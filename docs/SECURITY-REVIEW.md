@@ -20,7 +20,7 @@ Tanggal: 13/10/2026. Cakupan: `apps-script/`, frontend, workflow CI. Review inte
 ## Temuan terbuka
 | ID | Tingkat | Temuan | Tindakan |
 |---|---|---|---|
-| S-01 | Medium | Belum ada 2FA untuk admin. | Tambah TOTP di rilis berikutnya. |
+| S-01 | Medium (diterima) | Tidak ada 2FA untuk admin dashboard. | Diterima pemilik 14/10/2026: hanya satu admin. Mitigasi: kunci 15 menit setelah 5 gagal, password min. 12 karakter & unik, 2-Step Verification wajib di akun Google pemilik Sheet. |
 | S-02 | Medium | Hash password lebih lemah dari bcrypt/Argon2 (Apps Script tidak menyediakannya). Pepper di Script Properties membuat bocornya Sheet saja tidak cukup untuk menebak password secara offline. | Terima untuk MVP; pindah ke backend dengan Argon2 bila skala bertambah. |
 | S-03 | Medium | Siapa pun yang punya akses edit ke Sheet atau proyek Apps Script bisa mengubah data langsung, melewati aturan dan audit. | Jangan bagikan Sheet/proyek; aktifkan 2FA akun Google pemilik. |
 | S-04 | Low | Audit log disimpan di Sheet yang bisa diedit pemilik (tidak append-only secara teknis). | Proteksi sheet `audit_log`; ekspor berkala ke arsip. |
