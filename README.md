@@ -15,6 +15,7 @@ Dashboard admin untuk mengelola customer, langganan, license key, dan kuota devi
 - Tambah customer → Customer ID otomatis (`CUST-00001`) + license key (`AAL-XXXXX-XXXXX-XXXXX-XXXXX`) ditampilkan sekali.
 - Detail customer: perpanjang/ganti paket, suspend/aktifkan, reset license key, nonaktifkan device kasir, riwayat, audit log.
 - Role admin: `superadmin`, `sales`, `support`, `viewer`.
+- **License API untuk aplikasi kasir**: aktivasi device dengan kuota dan token lisensi bertanda tangan yang bisa diverifikasi offline. Kontrak: [`docs/LICENSE-API.md`](docs/LICENSE-API.md).
 
 ## Setup (sekali, sekitar 15 menit)
 
@@ -24,11 +25,12 @@ Dashboard admin untuk mengelola customer, langganan, license key, dan kuota devi
 
 ### 2. Apps Script
 1. Buka <https://script.google.com> → **New project**, beri nama `AAL Subscription API`.
-2. Buat file sesuai isi folder `apps-script/`: `Code.gs`, `Db.gs`, `Auth.gs`, `Tenants.gs`, `Setup.gs` (salin isi masing-masing `.js`). Di **Project Settings** centang *Show "appsscript.json" manifest file in editor*, lalu ganti isinya dengan `apps-script/appsscript.json`.
+2. Buat file sesuai isi folder `apps-script/`: `Code.gs`, `Db.gs`, `Auth.gs`, `Tenants.gs`, `License.gs`, `Setup.gs` (salin isi masing-masing `.js`). Di **Project Settings** centang *Show "appsscript.json" manifest file in editor*, lalu ganti isinya dengan `apps-script/appsscript.json`.
 3. **Project Settings → Script Properties**, tambahkan:
    - `SHEET_ID` = ID Sheet dari langkah 1.2
    - `ADMIN_EMAIL` = email login Anda
    - `ADMIN_TEMP_PASSWORD` = password sementara (min. 12 karakter); otomatis dihapus setelah setup
+   - `LICENSE_SIGNING_KEY` = private key dari `node scripts/generate-license-keypair.mjs` (simpan public key-nya untuk aplikasi kasir). Boleh diisi belakangan, sebelum aplikasi kasir dipakai.
 4. Pilih fungsi `setup` → **Run** → izinkan akses. Sheet akan terisi tab tabel, paket contoh, dan akun superadmin Anda.
 5. **Deploy → New deployment → Web app**: *Execute as*: **Me**, *Who has access*: **Anyone**. Salin URL yang berakhiran `/exec`.
 

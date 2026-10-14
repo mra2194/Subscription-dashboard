@@ -1,5 +1,5 @@
 // Lingkungan Apps Script tiruan untuk menguji apps-script/*.js di Node.
-import { createHash, createHmac, randomUUID } from 'node:crypto';
+import { createHash, createHmac, createSign, randomUUID } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -73,6 +73,11 @@ export function loadAppsScript(props: Record<string, string> = {}) {
       Charset: { UTF_8: 'utf8' },
       computeDigest: (_a: string, text: string) => signed(createHash('sha256').update(text, 'utf8').digest()),
       computeHmacSha256Signature: (value: string, key: string) => signed(createHmac('sha256', key).update(value, 'utf8').digest()),
+      computeRsaSha256Signature: (value: string, pem: string) => signed(createSign('RSA-SHA256').update(value, 'utf8').sign(pem)),
+      base64EncodeWebSafe: (data: string | number[]) =>
+        (typeof data === 'string' ? Buffer.from(data, 'utf8') : Buffer.from(data.map((b) => (b < 0 ? b + 256 : b)))).toString('base64').replace(/\+/g, '-').replace(/\//g, '_'),
+      base64DecodeWebSafe: (s: string) => signed(Buffer.from(s.replace(/-/g, '+').replace(/_/g, '/'), 'base64')),
+      newBlob: (bytes: number[]) => ({ getDataAsString: () => Buffer.from(bytes.map((b) => (b < 0 ? b + 256 : b))).toString('utf8') }),
       formatDate: (d: Date, tz: string) => new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d),
     },
   };

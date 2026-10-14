@@ -147,7 +147,7 @@ function tenantDetail_(token, tenantId) {
     subscriptions: readAll_('subscriptions').filter(function (s) { return s.tenant_id === tenantId; }).sort(byNewest('starts_at'))
       .map(function (s) { var o = public_(s); o.plan_name = (plansByCode[s.plan_code] || {}).name || s.plan_code; o.price = Number(s.price); return o; }),
     devices: readAll_('devices').filter(function (d) { return d.tenant_id === tenantId; }).sort(byNewest('activated_at'))
-      .map(function (d) { return public_(d, ['device_fingerprint']); }),
+      .map(function (d) { return public_(d, ['device_fingerprint', 'token_hash', 'prev_token_hash']); }),
     license_keys: readAll_('license_keys').filter(function (k) { return k.tenant_id === tenantId; }).sort(byNewest('issued_at'))
       .map(function (k) { return public_(k, ['key_hash']); }),
     audit: admin.role === 'superadmin'

@@ -15,6 +15,7 @@ Tanggal: 13/10/2026. Cakupan: `apps-script/`, frontend, workflow CI. Review inte
 | Otorisasi | Setiap aksi memeriksa sesi, flag wajib-ganti-password, dan role di server. |
 | Integritas | Semua tulis di bawah `LockService`; formula injection dicegah; error internal disamarkan. |
 | License key | Dibuat dari 2 UUID v4 acak, disimpan sebagai SHA-256, tampil sekali, kolom hash tidak pernah dikirim ke klien. |
+| Token kasir | RSA-SHA256 (private key di Script Properties), maks. 72 jam dan tidak melewati masa tenggang, dirotasi tiap refresh, server mencocokkan hash token tersimpan, device yang dicabut langsung ditolak saat refresh. Aktivasi dikunci setelah 10 key salah per Customer ID. |
 | Frontend | Token di `sessionStorage`, CSP meta membatasi koneksi hanya ke Google Apps Script, `noindex`, `no-referrer`. |
 
 ## Temuan terbuka
@@ -25,4 +26,6 @@ Tanggal: 13/10/2026. Cakupan: `apps-script/`, frontend, workflow CI. Review inte
 | S-03 | Medium | Siapa pun yang punya akses edit ke Sheet atau proyek Apps Script bisa mengubah data langsung, melewati aturan dan audit. | Jangan bagikan Sheet/proyek; aktifkan 2FA akun Google pemilik. |
 | S-04 | Low | Audit log disimpan di Sheet yang bisa diedit pemilik (tidak append-only secara teknis). | Proteksi sheet `audit_log`; ekspor berkala ke arsip. |
 | S-05 | Low | GitHub Pages tidak bisa mengirim header HTTP (clickjacking, HSTS). | Terima untuk MVP. |
+| S-07 | Low | Penyerang yang tahu Customer ID bisa sengaja salah key 10 kali untuk mengunci aktivasi device baru customer itu selama 15 menit (device yang sudah aktif tidak terpengaruh). | Terima; pantau `device.activate_failed` di audit. |
+| S-08 | Low | Sidik jari device dibuat oleh aplikasi; device yang sidik jarinya ditiru bisa memakai slot device lain. | Terima; owner bisa menonaktifkan device dari dashboard. |
 | S-06 | Info | Kuota harian Google Apps Script dan respon 1-3 detik per aksi. | Pantau; pindah backend bila customer bertambah banyak. |

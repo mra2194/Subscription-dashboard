@@ -7,6 +7,7 @@ Tanggal: 13/10/2026. Node 22, Chromium headless.
 | TypeScript `tsc -b` (strict) | Lulus, 0 error |
 | Unit test frontend (Vitest) | 5/5 lulus: kebijakan password, MRR, harga paket |
 | Tes backend Apps Script (`tests/appsScript.test.ts`) | 10/10 lulus |
+| Tes License API kasir (`tests/licenseApi.test.ts`) | 8/8 lulus |
 | End-to-end di browser (Chromium + backend tiruan) | Lulus: login → dipaksa ganti password (akses langsung ke dashboard tetap dialihkan) → dashboard → customer baru → license key tampil sekali → detail → logout |
 | Build produksi | Lulus |
 | `npm audit --omit=dev` | 0 kerentanan |
@@ -22,5 +23,7 @@ Tes backend menjalankan file `apps-script/*.js` apa adanya di atas tiruan `Sprea
 8. Kuota device: device ke-3 pada paket 2 kasir ditolak; menonaktifkan device membebaskan kuota.
 9. Role: viewer hanya baca dan tidak melihat audit; sales tidak bisa suspend atau menerbitkan key.
 10. Validasi input; error internal disamarkan menjadi `SERVER_ERROR`.
+
+Tes License API kasir mencakup: token terverifikasi dengan public key dan `exp` ≤ 72 jam; token yang dipalsukan gagal verifikasi; key salah ditolak dan dikunci setelah 10 kali; kuota device, aktivasi ulang device yang sama tidak makan kuota, nonaktifkan device membebaskan slot; rotasi token dengan toleransi satu respon hilang; pencatatan pemakaian; device dicabut dan customer disuspend ditolak; `exp` tidak melewati masa tenggang; hash token dan sidik jari device tidak pernah sampai ke dashboard; kunci penandatangan hilang menghasilkan error tersamar.
 
 **Belum diuji:** deployment Apps Script sungguhan di akun Google (perilaku redirect & CORS Web App, kuota Google, kecepatan). Ini harus dicek saat setup pertama.

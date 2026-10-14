@@ -9,7 +9,7 @@ var TABLES = {
   tenants: ['id', 'customer_code', 'business_name', 'owner_name', 'owner_phone', 'owner_email', 'address', 'status', 'note', 'created_by', 'created_at', 'updated_at'],
   subscriptions: ['id', 'tenant_id', 'plan_code', 'status', 'starts_at', 'ends_at', 'grace_days', 'max_pos_devices_override', 'billing_cycle', 'price', 'created_by', 'created_at'],
   license_keys: ['id', 'tenant_id', 'key_prefix', 'key_hash', 'issued_by', 'issued_at', 'revoked_at', 'revoked_by', 'revoke_reason'],
-  devices: ['id', 'tenant_id', 'kind', 'device_fingerprint', 'device_name', 'app_version', 'activated_at', 'last_seen_at', 'deactivated_at', 'deactivated_by', 'deactivate_reason'],
+  devices: ['id', 'tenant_id', 'kind', 'device_fingerprint', 'device_name', 'app_version', 'activated_at', 'last_seen_at', 'deactivated_at', 'deactivated_by', 'deactivate_reason', 'token_hash', 'prev_token_hash'],
   usage: ['tenant_id', 'active_users', 'sales_30d', 'updated_at'],
   audit_log: ['occurred_at', 'admin_id', 'tenant_id', 'action', 'detail'],
 };

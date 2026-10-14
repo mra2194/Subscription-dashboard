@@ -16,10 +16,13 @@ var ACTIONS = {
   setTenantStatus: function (b) { return setTenantStatus_(b.token, b); },
   issueLicenseKey: function (b) { return issueLicenseKey_(b.token, b); },
   deactivateDevice: function (b) { return deactivateDevice_(b.token, b); },
+  // Dipanggil aplikasi kasir (tanpa sesi admin)
+  activateDevice: function (b) { return activateDevice_(b); },
+  refreshDevice: function (b) { return refreshDevice_(b); },
 };
 
 // Error yang aman ditampilkan ke klien; selain ini disamarkan.
-var PUBLIC_ERRORS = /^(UNAUTHENTICATED|PASSWORD_CHANGE_REQUIRED|FORBIDDEN|INVALID_LOGIN|LOCKED_OUT|WRONG_CURRENT_PASSWORD|WEAK_PASSWORD|VALIDATION|PLAN_NOT_FOUND|TENANT_NOT_FOUND|DEVICE_NOT_FOUND|INVALID_MONTHS|LICENSE_INACTIVE|DEVICE_QUOTA_EXCEEDED|UNKNOWN_ACTION|BAD_REQUEST)/;
+var PUBLIC_ERRORS = /^(UNAUTHENTICATED|PASSWORD_CHANGE_REQUIRED|FORBIDDEN|INVALID_LOGIN|LOCKED_OUT|WRONG_CURRENT_PASSWORD|WEAK_PASSWORD|VALIDATION|PLAN_NOT_FOUND|TENANT_NOT_FOUND|DEVICE_NOT_FOUND|INVALID_MONTHS|LICENSE_INACTIVE|DEVICE_QUOTA_EXCEEDED|INVALID_LICENSE|INVALID_TOKEN|DEVICE_REVOKED|UNKNOWN_ACTION|BAD_REQUEST)/;
 
 function handle_(raw) {
   var body;

@@ -6,4 +6,5 @@
 - Login admin dengan hash password ber-salt + pepper, penguncian setelah 5 kali gagal, sesi 30 menit, dan wajib ganti password saat login pertama (ditegakkan di server).
 - Pencegahan formula injection saat menulis ke Sheet.
 - Dashboard customer, form customer baru dengan license key sekali tampil, halaman detail dengan perpanjang, suspend, reset key, nonaktifkan device.
+- License API untuk aplikasi kasir: aktivasi device dengan kuota, token RSA-SHA256 berlaku maks. 72 jam untuk mode offline, rotasi token, pencabutan device, laporan pemakaian, kontrak di `docs/LICENSE-API.md`.
 - Workflow CI (typecheck, unit test, tes backend, npm audit) dan deploy GitHub Pages.
