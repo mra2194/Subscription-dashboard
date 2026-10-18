@@ -15,6 +15,7 @@ export class FakeSheet {
   private store(v: Cell): Cell {
     if (typeof v === 'string') {
       if (v.startsWith("'")) return v.slice(1); // Sheets menyimpan teks literal tanpa apostrof
+      if (/^-?\d+(\.\d+)?$/.test(v)) return Number(v); // Sheets mengubah teks mirip angka menjadi angka
       if (/^[=+\-@]/.test(v)) {
         this.formulas.push(v); // akan dievaluasi sebagai formula di Sheets sungguhan
         return v;

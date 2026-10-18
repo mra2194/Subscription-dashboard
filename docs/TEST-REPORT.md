@@ -1,6 +1,6 @@
 # Test Report v0.1.0 (Sentinel)
 
-Tanggal: 13/10/2026. Node 22, Chromium headless.
+Tanggal: 13/10/2026, tes ulang 18/10/2026 (23/23 lulus, termasuk cek no HP berawalan 0 yang terbukti gagal tanpa perbaikan). Node 22, Chromium headless.
 
 | Suite | Hasil |
 |---|---|

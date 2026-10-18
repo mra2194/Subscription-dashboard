@@ -123,7 +123,9 @@ function refreshDevice_(b) {
 
     if (b.app_version) update_('devices', device, { app_version: optionalText_(b.app_version, 20) });
     if (b.usage && typeof b.usage === 'object') recordUsage_(tenant.id, b.usage);
-    return issueDeviceToken_(tenant, device, e);
+    var out = issueDeviceToken_(tenant, device, e);
+    out.device_id = device.id;
+    return out;
   });
 }
 

@@ -280,7 +280,9 @@ function assertDeviceQuota_(tenantId) {
   var plansByCode = {};
   readAll_('plans').forEach(function (p) { plansByCode[p.code] = p; });
   var e = entitlement_(tenantId, readAll_('subscriptions'), plansByCode, Date.now());
-  if (t.status !== 'active' || !e || ['trial', 'active'].indexOf(e.effective_status) < 0) throw new Error('LICENSE_INACTIVE');
+  if (t.status !== 'active' || !e || ['trial', 'active'].indexOf(e.effective_status) < 0) {
+    throw new Error('LICENSE_INACTIVE: ' + (t.status !== 'active' ? t.status : (e ? e.effective_status : 'none')));
+  }
   var used = readAll_('devices').filter(function (d) { return d.tenant_id === tenantId && d.kind === 'pos' && !d.deactivated_at; }).length;
   if (used >= e.max_pos_devices) throw new Error('DEVICE_QUOTA_EXCEEDED: ' + used + ' of ' + e.max_pos_devices);
 }

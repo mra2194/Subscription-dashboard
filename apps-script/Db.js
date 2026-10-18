@@ -26,10 +26,14 @@ function sheet_(table) {
   return sh;
 }
 
-/** Cegah formula injection: teks yang diawali = + - @ disimpan sebagai teks biasa. */
+/**
+ * Semua teks disimpan dengan awalan apostrof agar Sheets menyimpannya apa adanya:
+ * mencegah formula injection (= + - @) dan konversi otomatis, mis. no HP "0812..." menjadi angka 812...
+ * atau tanggal ISO menjadi Date. Apostrof tidak ikut terbaca oleh getValues().
+ */
 function cell_(value) {
   if (value === null || value === undefined) return '';
-  if (typeof value === 'string' && /^[=+\-@\t\r]/.test(value)) return "'" + value;
+  if (typeof value === 'string') return "'" + value;
   return value;
 }
 

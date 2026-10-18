@@ -1,6 +1,6 @@
 # Security Review v0.1.0 (Shadow)
 
-Tanggal: 13/10/2026. Cakupan: `apps-script/`, frontend, workflow CI. Review internal, bukan pentest independen.
+Tanggal: 13/10/2026, diperbarui 18/10/2026 (audit menyeluruh). Cakupan: `apps-script/`, frontend, workflow CI. Review internal, bukan pentest independen.
 
 **Hasil gerbang: lulus. Tidak ada temuan High/Critical.**
 
@@ -28,4 +28,6 @@ Tanggal: 13/10/2026. Cakupan: `apps-script/`, frontend, workflow CI. Review inte
 | S-05 | Low | GitHub Pages tidak bisa mengirim header HTTP (clickjacking, HSTS). | Terima untuk MVP. |
 | S-07 | Low | Penyerang yang tahu Customer ID bisa sengaja salah key 10 kali untuk mengunci aktivasi device baru customer itu selama 15 menit (device yang sudah aktif tidak terpengaruh). | Terima; pantau `device.activate_failed` di audit. |
 | S-08 | Low | Sidik jari device dibuat oleh aplikasi; device yang sidik jarinya ditiru bisa memakai slot device lain. | Terima; owner bisa menonaktifkan device dari dashboard. |
+| S-09 | Medium | Token device yang disalin dari penyimpanan aplikasi (butuh HP di-root atau backup) bisa dipakai di HP kedua. Karena token sebelumnya diterima sekali, kedua HP bisa bergantian refresh tanpa batas dan kuota kasir terlewati. | Terbuka. Usulan: catat `device.token_reuse` di audit saat token sebelumnya dipakai, tandai device yang memakainya berturut-turut, dan simpan token di Android Keystore. |
+| S-10 | Medium | Token belum membawa `kid` (ID kunci). Rotasi kunci penandatangan menjadi rumit dan berisiko mengunci semua kasir. | Terbuka. Usulan: tambahkan `kid` ke payload sebelum aplikasi kasir dibangun (perubahan kontrak, butuh persetujuan pemilik). |
 | S-06 | Info | Kuota harian Google Apps Script dan respon 1-3 detik per aksi. | Pantau; pindah backend bila customer bertambah banyak. |

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1] - 2026-10-18
+### Fixed
+- Semua teks ditulis ke Sheet sebagai teks literal: no HP berawalan `0` tidak lagi berubah menjadi angka, tanggal tidak lagi dikonversi otomatis.
+- `refreshDevice` mengembalikan `device_id` seperti aktivasi; error kuota saat masa tenggang kini `LICENSE_INACTIVE: grace`.
+- Dokumen lisensi: aturan jam device yang mengunci kasir berjam terlambat, urutan rotasi kunci, catatan redirect 302 Apps Script, sisa rujukan Ed25519 dan 2FA.
+
 ## [0.1.0] - 2026-10-13
 ### Added
 - Backend Google Apps Script di atas Google Sheet private: paket, customer, langganan berantai, license key (hash), device kasir dengan kuota, audit log.

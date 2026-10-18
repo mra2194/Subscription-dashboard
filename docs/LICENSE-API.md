@@ -2,6 +2,8 @@
 
 Kontrak antara aplikasi kasir dan backend lisensi (`apps-script/License.js`). Semua panggilan: `POST <URL Web App /exec>`, body JSON, header `Content-Type: text/plain;charset=utf-8`. Respon selalu `{ "ok": true, "data": ... }` atau `{ "ok": false, "error": "KODE" }`.
 
+**Redirect:** Apps Script membalas POST dengan `302` ke `script.googleusercontent.com`. Browser mengikutinya otomatis, tetapi klien HTTP aplikasi (mis. `dio`/`http` di Flutter) umumnya **tidak** mengikuti redirect untuk POST. Klien wajib membaca header `Location` lalu mengirim `GET` ke URL itu untuk mengambil JSON-nya.
+
 ## 1. Aktivasi device (sekali per device)
 
 Dipanggil saat setup awal di toko. Owner memasukkan Customer ID dan license key di aplikasi kasir.
@@ -23,7 +25,7 @@ Respon `data`: `device_id`, `device_token`, `expires_at`, `status`, `paid_until`
   "usage": { "active_users": 3, "sales_30d": 420 } }
 ```
 
-Respon sama seperti aktivasi (token baru). Simpan token baru; token lama masih diterima **satu kali** bila respon sebelumnya hilang di jaringan.
+Respon sama seperti aktivasi (`device_id` + token baru). Simpan token baru; token lama masih diterima **satu kali** bila respon sebelumnya hilang di jaringan.
 
 - Error: `INVALID_TOKEN`, `DEVICE_REVOKED` (dinonaktifkan dari dashboard), `LICENSE_INACTIVE: suspended|terminated|expired|none`.
 
@@ -38,7 +40,7 @@ Payload: `v`, `cc` (Customer ID), `tid`, `did` (device id), `plan`, `max_pos`, `
 ## 4. Aturan wajib di aplikasi kasir
 
 1. **Verifikasi tanda tangan** token dengan public key yang ditanam di aplikasi, setiap buka aplikasi, buka shift, dan tiap 1 jam. Token yang gagal verifikasi = tidak berlisensi.
-2. **Cek `exp`** terhadap jam device. Simpan waktu server terakhir (`iat` token terbaru); bila jam device mundur lebih dari 5 menit dari nilai itu, anggap token kedaluwarsa dan wajib online.
+2. **Cek `exp` dengan jam yang dikoreksi.** Saat menerima token, simpan `iat` dan jam device saat itu (`received_at`). Waktu efektif = jam device sekarang + (`iat` − `received_at`); token kedaluwarsa bila waktu efektif ≥ `exp`. Bila jam device sekarang lebih kecil dari `received_at` terakhir dikurangi 5 menit, jam dimundurkan: anggap kedaluwarsa dan wajib online. Jangan membandingkan jam device langsung dengan `iat`: device yang jamnya terlambat beberapa menit akan terkunci terus walau baru refresh.
 3. **Saat offline**: tetap jualan selama `exp` belum lewat. Tampilkan peringatan bila sisa < 24 jam.
 4. **Saat `LICENSE_INACTIVE` atau `DEVICE_REVOKED`**: hentikan transaksi baru, tetapi laporan dan ekspor data tetap bisa dibuka.
 5. **Saat error jaringan atau `SERVER_ERROR`**: jangan hapus token; coba lagi nanti.
@@ -50,4 +52,4 @@ Buat sekali dengan `node scripts/generate-license-keypair.mjs`.
 - Private key → Script Properties `LICENSE_SIGNING_KEY`. Jangan di-commit, jangan dibagikan.
 - Public key → ditanam di aplikasi kasir.
 
-Bila private key bocor: buat pasangan baru, ganti Script Property, rilis aplikasi kasir dengan public key baru. Token lama otomatis tidak bisa di-refresh setelah rotasi kedua.
+Bila private key bocor: rilis dulu aplikasi kasir yang menerima public key lama **dan** baru, tunggu semua device ter-update, baru ganti Script Property. Kalau urutannya terbalik, semua kasir dengan aplikasi lama akan menolak token baru dan terkunci. Server tidak memeriksa tanda tangan saat refresh (hanya hash token), jadi token lama tetap bisa di-refresh dan langsung mendapat token bertanda tangan kunci baru.
