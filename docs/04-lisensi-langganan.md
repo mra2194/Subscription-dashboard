@@ -62,7 +62,7 @@ Data operasional toko dan data lisensi dipisah di dua database. Dengan begitu bu
 3. Bila kuota penuh: pesan "Kuota kasir penuh (2 dari 2). Nonaktifkan device lain atau hubungi penyedia untuk upgrade."
 
 ### 4.3 Token lisensi offline
-- Setelah aktivasi/refresh, server menerbitkan token yang ditandatangani (Ed25519) berisi: customer ID, device ID, paket, fitur, `valid_until = min(akhir langganan + tenggang, sekarang + 72 jam)`.
+- Setelah aktivasi/refresh, server menerbitkan token yang ditandatangani (RSA-SHA256, lihat `docs/LICENSE-API.md`) berisi: customer ID, device ID, paket, fitur, `valid_until = min(akhir langganan + tenggang, sekarang + 72 jam)`.
 - POS memverifikasi tanda tangan & masa berlaku secara lokal di setiap pembukaan shift dan setiap 1 jam.
 - POS mencoba refresh tiap 1 jam saat online. Jam device yang mundur jauh dari waktu server terakhir dianggap mencurigakan → wajib online.
 
@@ -113,7 +113,7 @@ Downgrade paket tidak memutus device yang sudah aktif secara otomatis; owner dim
 - Aksi: Perpanjang, Ganti paket, Override kuota, Suspend manual, Reset license key, Tandai invoice lunas.
 - Log validasi lisensi (deteksi percobaan device ke-n yang ditolak, key salah berulang).
 
-**Keamanan dashboard:** login admin wajib 2FA (TOTP), role admin (superadmin, sales, support, viewer), semua aksi tercatat di `platform_audit_logs` yang tidak bisa dihapus.
+**Keamanan dashboard:** login email + password (tanpa 2FA, keputusan pemilik 14/10/2026, lihat `docs/SECURITY-REVIEW.md` S-01), role admin (superadmin, sales, support, viewer), semua aksi tercatat di sheet `audit_log`.
 
 ## 6. Endpoint License Service
 

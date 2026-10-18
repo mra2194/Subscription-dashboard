@@ -80,6 +80,7 @@ describe('POS license API', () => {
     expect(r2.ok).toBe(true);
     const t2 = r2.data.device_token;
     expect(t2).not.toBe(t1);
+    expect(r2.data.device_id).toBeTruthy(); // respon refresh sama seperti aktivasi
     // Respon refresh hilang di jaringan: POS mencoba lagi dengan token lama, masih diterima sekali
     const r3 = env.call({ action: 'refreshDevice', device_token: t1 });
     expect(r3.ok).toBe(true);

@@ -111,16 +111,23 @@ describe('customers, subscriptions, license keys', () => {
     expect(JSON.stringify(detail)).not.toContain(key2);
     expect(detail.tenant.owner_phone).toBe('+628123');
 
+    // No HP berawalan 0 tidak boleh berubah menjadi angka oleh Sheets
+    const c2 = env.call({
+      action: 'createTenant', token, business_name: 'Toko Dua', owner_name: 'Sari', owner_phone: '081234567890',
+      plan_code: 'STARTER', starts_at: new Date().toISOString(), months: 1, billing_cycle: 'monthly', price: 150000,
+    });
+    expect(env.call({ action: 'tenantDetail', token, tenant_id: c2.data.id }).data.tenant.owner_phone).toBe('081234567890');
+
     expect(env.call({ action: 'extendSubscription', token, tenant_id: id, plan_code: 'PRO', months: 12, billing_cycle: 'yearly', price: 3000000 }).ok).toBe(true);
-    const row = env.call({ action: 'overview', token }).data[0];
+    const row = env.call({ action: 'overview', token }).data.find((r: any) => r.id === id);
     expect(row.plan_code).toBe('STARTER'); // paket berjalan tetap sampai periodenya habis
     expect(row.days_left).toBeGreaterThan(380);
     expect(row.max_pos_devices).toBe(2);
     expect(row.access_status).toBe('active');
 
     expect(env.call({ action: 'setTenantStatus', token, tenant_id: id, status: 'suspended', note: 'telat bayar' }).ok).toBe(true);
-    expect(env.call({ action: 'overview', token }).data[0].access_status).toBe('suspended');
-    expect(() => env.run('assertDeviceQuota_', id)).toThrow('LICENSE_INACTIVE');
+    expect(env.call({ action: 'overview', token }).data.find((r: any) => r.id === id).access_status).toBe('suspended');
+    expect(() => env.run('assertDeviceQuota_', id)).toThrow('LICENSE_INACTIVE: suspended');
 
     const actions = env.call({ action: 'tenantDetail', token, tenant_id: id }).data.audit.map((a: any) => a.action);
     expect(actions).toEqual(expect.arrayContaining(['tenant.create', 'license.issue', 'subscription.extend', 'tenant.status']));
